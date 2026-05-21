@@ -1,0 +1,281 @@
+"""
+NestMate — Placeholder Image Generator
+Run this ONCE after setting up the project:
+
+    python create_placeholder.py
+
+Creates: static/images/placeholder.jpg
+         static/images/avatar_default.png
+         static/images/no_photo.jpg
+
+Used as fallback in templates when listings have no photos.
+"""
+
+import os
+import sys
+
+
+def create_with_pillow():
+    """
+    Generate placeholder images using Pillow.
+    Install if needed: pip install Pillow
+    """
+    try:
+        from PIL import Image, ImageDraw
+    except ImportError:
+        print("❌ Pillow not installed.")
+        print("   Run: pip install Pillow --break-system-packages")
+        return False
+
+    os.makedirs('static/images', exist_ok=True)
+    os.makedirs('static/images/avatars', exist_ok=True)
+
+    # ── 1. Main listing placeholder (800×560) ─────────────────────────────────
+    img  = Image.new('RGB', (800, 560), '#f1f5f9')
+    draw = ImageDraw.Draw(img)
+
+    # Soft gradient background using horizontal bands
+    for y in range(560):
+        ratio = y / 560
+        r = int(241 + ratio * 8)
+        g = int(245 + ratio * 5)
+        b = int(249 + ratio * 3)
+        draw.line([(0, y), (800, y)], fill=(r, g, b))
+
+    # House shape (pentagon)
+    # Roof
+    roof = [(320, 200), (480, 200), (480, 300), (320, 300)]
+    draw.polygon(
+        [(400, 160), (480, 210), (480, 290), (320, 290), (320, 210)],
+        fill='#e2e8f0',
+        outline='#cbd5e1',
+    )
+    # Roof triangle
+    draw.polygon(
+        [(400, 130), (460, 195), (340, 195)],
+        fill='#cbd5e1',
+        outline='#b0bec5',
+    )
+    # Door
+    draw.rectangle([375, 250, 425, 290], fill='#94a3b8', outline='#7f8fa6')
+    # Windows
+    draw.rectangle([330, 215, 362, 242], fill='#bfdbfe', outline='#93c5fd')
+    draw.rectangle([438, 215, 470, 242], fill='#bfdbfe', outline='#93c5fd')
+    # Chimney
+    draw.rectangle([440, 110, 460, 165], fill='#cbd5e1', outline='#b0bec5')
+
+    # Divider line
+    draw.line([(200, 320), (600, 320)], fill='#e2e8f0', width=1)
+
+    # Main text
+    draw.text((400, 355), 'No Photo Available', fill='#94a3b8', anchor='mm')
+
+    # Sub text
+    draw.text((400, 385), 'NestMate Rental Platform', fill='#cbd5e1', anchor='mm')
+
+    img.save('static/images/placeholder.jpg', 'JPEG', quality=88, optimize=True)
+    print("✅ Created: static/images/placeholder.jpg  (800×560)")
+
+    # ── 2. no_photo.jpg — smaller version for cards (400×280) ─────────────────
+    img2  = Image.new('RGB', (400, 280), '#f8fafc')
+    draw2 = ImageDraw.Draw(img2)
+
+    for y in range(280):
+        ratio = y / 280
+        r = int(248 + ratio * 5)
+        g = int(250 + ratio * 3)
+        b = int(252 + ratio * 2)
+        draw2.line([(0, y), (400, y)], fill=(r, g, b))
+
+    # Simple house outline
+    draw2.polygon(
+        [(200, 70), (260, 115), (260, 175), (140, 175), (140, 115)],
+        fill='#e2e8f0', outline='#cbd5e1',
+    )
+    draw2.polygon(
+        [(200, 48), (268, 108), (132, 108)],
+        fill='#cbd5e1', outline='#b0bec5',
+    )
+    draw2.rectangle([180, 140, 220, 175], fill='#94a3b8')
+
+    draw2.text((200, 200), 'No Photo', fill='#94a3b8', anchor='mm')
+    draw2.text((200, 220), 'NestMate', fill='#e2e8f0', anchor='mm')
+
+    img2.save('static/images/no_photo.jpg', 'JPEG', quality=85, optimize=True)
+    print("✅ Created: static/images/no_photo.jpg      (400×280)")
+
+    # ── 3. avatar_default.png — default user avatar (200×200) ─────────────────
+    img3  = Image.new('RGBA', (200, 200), (0, 0, 0, 0))
+    draw3 = ImageDraw.Draw(img3)
+
+    # Circle background
+    draw3.ellipse([0, 0, 199, 199], fill='#e2e8f0')
+
+    # Person silhouette — head
+    draw3.ellipse([70, 40, 130, 100], fill='#94a3b8')
+
+    # Person silhouette — body
+    draw3.ellipse([40, 110, 160, 210], fill='#94a3b8')
+
+    img3.save('static/images/avatar_default.png', 'PNG', optimize=True)
+    print("✅ Created: static/images/avatar_default.png (200×200)")
+
+    # ── 4. agreement_preview.jpg — placeholder for PDF preview (600×800 A4) ───
+    img4  = Image.new('RGB', (600, 800), '#ffffff')
+    draw4 = ImageDraw.Draw(img4)
+
+    # Header bar
+    draw4.rectangle([0, 0, 600, 80], fill='#0f172a')
+    draw4.text((300, 30), '🏠 NestMate', fill='#ffffff', anchor='mm')
+    draw4.text((300, 58), 'RENTAL AGREEMENT', fill='#d97706', anchor='mm')
+
+    # Content lines (simulating text)
+    line_color = '#e2e8f0'
+    for i, y in enumerate(range(120, 600, 22)):
+        w = 480 if i % 3 != 2 else 320
+        x = (600 - w) // 2
+        draw4.rectangle([x, y, x + w, y + 10], fill=line_color)
+
+    # Signature area
+    draw4.rectangle([60, 660, 260, 680],  fill='#e2e8f0')
+    draw4.rectangle([340, 660, 540, 680], fill='#e2e8f0')
+    draw4.text((160, 700), 'Tenant Signature', fill='#94a3b8', anchor='mm')
+    draw4.text((440, 700), 'Owner Signature',  fill='#94a3b8', anchor='mm')
+
+    # Footer
+    draw4.rectangle([0, 760, 600, 800], fill='#f8fafc')
+    draw4.text((300, 780), 'Generated by NestMate', fill='#cbd5e1', anchor='mm')
+
+    img4.save('static/images/agreement_preview.jpg', 'JPEG', quality=85)
+    print("✅ Created: static/images/agreement_preview.jpg (600×800)")
+
+    return True
+
+
+def create_media_folders():
+    """
+    Pre-create the media/ subdirectories so Django
+    doesn't throw errors on first upload.
+    """
+    folders = [
+        'media/listings',
+        'media/agreements',
+        'media/verification',
+        'media/avatars',
+    ]
+    for folder in folders:
+        os.makedirs(folder, exist_ok=True)
+        # Create a .gitkeep so the folder is tracked in git
+        gitkeep = os.path.join(folder, '.gitkeep')
+        if not os.path.exists(gitkeep):
+            open(gitkeep, 'w').close()
+
+    print("\n✅ Created media/ subfolders:")
+    for f in folders:
+        print(f"   {f}/.gitkeep")
+
+
+def create_static_dirs():
+    """
+    Pre-create static/ subdirectories.
+    """
+    folders = [
+        'static/css',
+        'static/js',
+        'static/images',
+        'static/images/avatars',
+    ]
+    for folder in folders:
+        os.makedirs(folder, exist_ok=True)
+
+    print("\n✅ Created static/ subfolders:")
+    for f in folders:
+        print(f"   {f}/")
+
+
+def main():
+    print("=" * 55)
+    print("   NestMate — Static & Media Setup Script")
+    print("=" * 55)
+    print()
+
+    # Must run from project root (where manage.py is)
+    if not os.path.exists('manage.py'):
+        print("❌ ERROR: Run this from the project root folder")
+        print("         (the folder that contains manage.py)")
+        sys.exit(1)
+
+    # Step 1: Create directories
+    create_static_dirs()
+    create_media_folders()
+    print()
+
+    # Step 2: Create placeholder images
+    print("Creating placeholder images...")
+    success = create_with_pillow()
+
+    if not success:
+        print("\n⚠️  Pillow not available.")
+        print("   Creating empty placeholder files instead...")
+        os.makedirs('static/images', exist_ok=True)
+        # Create tiny 1×1 pixel JPEG as emergency fallback
+        # (a valid JPEG header in bytes)
+        tiny_jpg = bytes([
+            0xFF, 0xD8, 0xFF, 0xE0, 0x00, 0x10, 0x4A, 0x46,
+            0x49, 0x46, 0x00, 0x01, 0x01, 0x00, 0x00, 0x01,
+            0x00, 0x01, 0x00, 0x00, 0xFF, 0xDB, 0x00, 0x43,
+            0x00, 0x08, 0x06, 0x06, 0x07, 0x06, 0x05, 0x08,
+            0x07, 0x07, 0x07, 0x09, 0x09, 0x08, 0x0A, 0x0C,
+            0x14, 0x0D, 0x0C, 0x0B, 0x0B, 0x0C, 0x19, 0x12,
+            0x13, 0x0F, 0x14, 0x1D, 0x1A, 0x1F, 0x1E, 0x1D,
+            0x1A, 0x1C, 0x1C, 0x20, 0x24, 0x2E, 0x27, 0x20,
+            0x22, 0x2C, 0x23, 0x1C, 0x1C, 0x28, 0x37, 0x29,
+            0x2C, 0x30, 0x31, 0x34, 0x34, 0x34, 0x1F, 0x27,
+            0x39, 0x3D, 0x38, 0x32, 0x3C, 0x2E, 0x33, 0x34,
+            0x32, 0xFF, 0xC0, 0x00, 0x0B, 0x08, 0x00, 0x01,
+            0x00, 0x01, 0x01, 0x01, 0x11, 0x00, 0xFF, 0xC4,
+            0x00, 0x1F, 0x00, 0x00, 0x01, 0x05, 0x01, 0x01,
+            0x01, 0x01, 0x01, 0x01, 0x00, 0x00, 0x00, 0x00,
+            0x00, 0x00, 0x00, 0x00, 0x01, 0x02, 0x03, 0x04,
+            0x05, 0x06, 0x07, 0x08, 0x09, 0x0A, 0x0B, 0xFF,
+            0xC4, 0x00, 0xB5, 0x10, 0x00, 0x02, 0x01, 0x03,
+            0xFF, 0xD9,
+        ])
+        for fname in [
+            'static/images/placeholder.jpg',
+            'static/images/no_photo.jpg',
+            'static/images/agreement_preview.jpg',
+        ]:
+            with open(fname, 'wb') as f:
+                f.write(tiny_jpg)
+            print(f"   ✅ Created empty {fname}")
+
+        # Empty PNG for avatar
+        tiny_png = bytes([
+            0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A,
+            0x00, 0x00, 0x00, 0x0D, 0x49, 0x48, 0x44, 0x52,
+            0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x01,
+            0x08, 0x02, 0x00, 0x00, 0x00, 0x90, 0x77, 0x53,
+            0xDE, 0x00, 0x00, 0x00, 0x0C, 0x49, 0x44, 0x41,
+            0x54, 0x08, 0xD7, 0x63, 0xF8, 0xCF, 0xC0, 0x00,
+            0x00, 0x00, 0x02, 0x00, 0x01, 0xE2, 0x21, 0xBC,
+            0x33, 0x00, 0x00, 0x00, 0x00, 0x49, 0x45, 0x4E,
+            0x44, 0xAE, 0x42, 0x60, 0x82,
+        ])
+        with open('static/images/avatar_default.png', 'wb') as f:
+            f.write(tiny_png)
+        print("   ✅ Created empty static/images/avatar_default.png")
+
+    print()
+    print("=" * 55)
+    print("   ✅ Setup complete!")
+    print()
+    print("   Next steps:")
+    print("   1. pip install -r requirements.txt")
+    print("   2. python manage.py migrate")
+    print("   3. python manage.py runserver")
+    print("=" * 55)
+
+
+if __name__ == '__main__':
+    main()

@@ -1,0 +1,25 @@
+services:
+  - type: web
+    name: nestmate-backend
+    env: python
+    region: singapore
+    buildCommand: |
+      pip install -r requirements.txt
+      python manage.py migrate
+      python manage.py collectstatic --noinput
+    startCommand: gunicorn home_rental.wsgi:application --bind 0.0.0.0:$PORT --workers 2
+    envVars:
+      - key: DJANGO_SETTINGS_MODULE
+        value: home_rental.settings
+      - key: SECRET_KEY
+        generateValue: true
+      - key: RENDER
+        value: true
+      - key: MONGO_HOST
+        sync: false
+      - key: MONGO_DB
+        value: nestmate
+      - key: REDIS_URL
+        sync: false
+      - key: FRONTEND_URL
+        sync: false
